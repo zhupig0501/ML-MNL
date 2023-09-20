@@ -5,6 +5,7 @@ from gurobipy import GRB,Model,quicksum
 from copy import deepcopy
 import torch
 import multiprocessing as mt
+from  new_transformer_combination import Modifiled_Transformer
 
 #MNL assortment
 def MNL(utility,prices,capacity = INFINITY):
@@ -129,6 +130,47 @@ def  ml_assortment_swap(model,valid_data,price,assortment,max_assort = 100,capac
             assortment.append(max_idx2)
     return assortment
 
+def cal_profict_transform(model_name, df, assortment, pt_weight, price):
+    assortment = sorted(assortment)
+    pro_pred = Modifiled_Transformer.predict(df.loc[assortment],pt_weight = pt_weight,model_name = model_name )
+    pro_pred = pro_pred.detach().numpy()
+    pro_pred = pro_pred.flatten()
+    if len(assortment) == 1:
+        profit = pro_pred[0]*price[assortment[0]]
+    else:
+        profit = np.dot(pro_pred[0:len(assortment)],price[assortment])
+
+    return profit
+
+def transformer_assortment_swap(model_name, df, assortment, pt_weight, price, max_assort = 100):
+    profit = cal_profict_transform(model_name, df, assortment, pt_weight, price)
+    for k in range(10000):
+        revenue = np.zeros(len(assortment))
+        for idx,item in enumerate(assortment):
+            temp_assort = deepcopy(assortment)
+            temp_assort.remove(item)
+            revenue[idx] = cal_profict_transform(model_name, df, temp_assort, pt_weight, price)
+        max_idx1 = np.argmax(revenue)
+        #profit_temp = revenue[max_idx1]
+        max_idx1 = assortment[max_idx1]
+
+        revenue = {}
+        for idx in range(max_assort):
+            if idx not in assortment:
+                temp_assort = assortment + [idx]
+                temp_assort.remove(max_idx1)
+                revenue[idx] = cal_profict_transform(model_name, df, temp_assort, pt_weight, price)
+        max_idx2  = max(revenue, key = revenue.get)
+        max_revunue = revenue[max_idx2]
+
+
+
+        if profit > max_revunue:
+            return assortment
+        else:
+            profit = max_revunue
+            assortment.remove(max_idx1)
+            assortment.append(max_idx2)
 
 
 

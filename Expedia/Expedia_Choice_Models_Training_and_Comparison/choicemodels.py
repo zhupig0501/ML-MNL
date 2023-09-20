@@ -9,9 +9,9 @@ import torch.nn.functional as F
 EMBEDDING_SIZE = 16
 DROPOUT = 0.5
 DEEPLAYER_SIZE = 64
-FEATURE_SIZES = np.array([11, 7, 97, 63, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1])
-FIELD_SIZE = 17
-FEATURE_SIZES1 = np.array([11, 7, 97, 63, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1,1,1,1,1,1,1,2,2])
+FEATURE_SIZES = np.array([6, 10, 2, 1, 1, 1, 1, 2, 1, 1, 2, 2])
+FIELD_SIZE = 12
+FEATURE_SIZES1 = np.array([6, 10, 2, 1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2])
 FIELD_SIZE1 = 28
 
 
@@ -31,6 +31,88 @@ class MNL_loss(nn.Module):
                 loss = loss + torch.log10((torch.exp(u))/(torch.exp(u)+torch.sum(torch.exp(x[i]))))
         return -loss/batch_size
 
+#Define the loss function of LC-MNL Model
+class MMNL_loss(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self,x,y,z,alpha,u_previous,u):
+        model_num,batch_size,choice_size = z.shape
+        loss = 0
+        for i in range(batch_size):
+            g = 0
+            for j in range(model_num):
+                if torch.sum(y[i]) > 0:
+                    g = g + alpha[j]*torch.exp(torch.sum(z[j,i]*y[i]))/(torch.exp(u_previous[j])+torch.sum(torch.exp(z[j,i])))
+                else:
+                    g = g + alpha[j]*torch.exp(u_previous[j])/(torch.exp(u_previous[j])+torch.sum(torch.exp(z[j,i])))
+            g = float(g)
+            if torch.sum(y[i]) > 0:
+                loss = loss + torch.exp(torch.sum(x[i]*y[i]))/((torch.exp(u)+torch.sum(torch.exp(x[i])))*g)
+            else:
+                loss = loss + torch.exp(u)/((torch.exp(u)+torch.sum(torch.exp(x[i])))*g)
+        return (-loss)/batch_size
+
+#Define the loss function of Exponomial Choice Model
+#Assume that no-purchase is 0
+class Exp_loss(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self,x,y,u):
+        batch_size,choice_size = x.shape
+        loss = 0
+        for i in range(batch_size):
+            index_sort = torch.argsort(x[i])
+            num = 0
+            for j in index_sort:
+                if x[i,j] <= u:
+                    num = num + 1
+                else:
+                    break
+            if torch.sum(y[i]) > 0:
+                for j,item in enumerate(index_sort):
+                    if y[i,item] != 0:
+                        if num == 0:
+                            if j == 0:
+                                common_value = int(torch.sum(torch.max(x[i]-u,torch.tensor(0))))
+                                loss = loss + torch.exp(-torch.sum(torch.max(x[i]-torch.sum(x[i]*y[i]),torch.tensor(0))))/(choice_size-j) - torch.exp(-torch.sum(torch.max(x[i]-u,torch.tensor(0))))/((choice_size)*(choice_size+1))
+                            else:
+                                if j <= 15:
+                                    common_value = int(torch.sum(torch.max(x[i]-x[i,item],torch.tensor(0))))
+                                else:
+                                    common_value = int(torch.sum(torch.max(x[i]-x[i,index_sort[15]],torch.tensor(0))))
+                                loss = loss + torch.exp(-torch.sum(torch.max(x[i]-torch.sum(x[i]*y[i]),torch.tensor(0))))/(choice_size-j) - torch.exp(-torch.sum(torch.max(x[i]-u,torch.tensor(0))))/((choice_size)*(choice_size+1)) - torch.sum(torch.tensor([torch.exp(-torch.sum(torch.max(x[i]-x[i,index_sort[k]],torch.tensor(0))))/((choice_size-k-1)*(choice_size-k)) for k in range(0,j)])) 
+                        else:
+                            if j == 0:
+                                common_value = int(torch.sum(torch.max(x[i]-x[i,item],torch.tensor(0))))
+                                loss = loss + torch.exp(-torch.sum(torch.max(x[i]-torch.sum(x[i]*y[i]),torch.tensor(0)))-u+x[i,item])/(choice_size+1)
+                            elif j <= num-1:
+                                if j <= 15:
+                                    common_value = int(torch.sum(torch.max(x[i]-x[i,item],torch.tensor(0))))
+                                else:
+                                    common_value = int(torch.sum(torch.max(x[i]-x[i,index_sort[15]],torch.tensor(0))))
+                                loss = loss + torch.exp(-torch.sum(torch.max(x[i]-torch.sum(x[i]*y[i]),torch.tensor(0)))-u+x[i,item])/(choice_size- j + 1) - torch.sum(torch.tensor([torch.exp(-torch.sum(torch.max(x[i]-x[i,index_sort[k]],torch.tensor(0)))-u+x[i,index_sort[k]])/((choice_size-k)*(choice_size-k+1)) for k in range(0,j)]))
+                            elif j > num:
+                                if j <= 15:
+                                    common_value = int(torch.sum(torch.max(x[i]-x[i,item],torch.tensor(0))))
+                                else:
+                                    common_value = int(torch.sum(torch.max(x[i]-x[i,index_sort[15]],torch.tensor(0))))
+                                loss = loss + torch.exp(-torch.sum(torch.max(x[i]-torch.sum(x[i]*y[i]),torch.tensor(0))))/(choice_size-j) - torch.exp(-torch.sum(torch.max(x[i]-u,torch.tensor(0))))/((choice_size-num)*(choice_size + 1-num)) - torch.sum(torch.tensor([torch.exp(-torch.sum(torch.max(x[i]-x[i,index_sort[k]],torch.tensor(0)))-u+x[i,index_sort[k]])/((choice_size-k)*(choice_size-k+1)) for k in range(0,num)])) - torch.sum(torch.tensor([torch.exp(-torch.sum(torch.max(x[i]-x[i,index_sort[k]],torch.tensor(0))))/((choice_size-k-1)*(choice_size-k)) for k in range(num,j)]))
+                            elif j == num:
+                                if j <= 15:
+                                    common_value = int(torch.sum(torch.max(x[i]-x[i,item],torch.tensor(0))))
+                                else:
+                                    common_value = int(torch.sum(torch.max(x[i]-x[i,index_sort[15]],torch.tensor(0))))
+                                loss = loss + torch.exp(-torch.sum(torch.max(x[i]-torch.sum(x[i]*y[i]),torch.tensor(0))))/(choice_size-j) - torch.exp(-torch.sum(torch.max(x[i]-u,torch.tensor(0))))/((choice_size-num)*(choice_size + 1-num)) - torch.sum(torch.tensor([torch.exp(-torch.sum(torch.max(x[i]-x[i,index_sort[k]],torch.tensor(0)))-u+x[i,index_sort[k]])/((choice_size-k)*(choice_size-k+1)) for k in range(0,num)]))
+            else:
+                if num == 0:
+                    common_value = int(torch.sum(torch.max(x[i]-u,torch.tensor(0))))
+                    loss = loss + torch.exp(-torch.sum(torch.max(x[i]-u,torch.tensor(0))))/(choice_size + 1)
+                else:
+                    common_value = int(torch.sum(torch.max(x[i]-u,torch.tensor(0))))
+                    loss = loss + torch.exp(-torch.sum(torch.max(x[i]-u,torch.tensor(0))))/(choice_size - num + 1) - torch.sum(torch.tensor([torch.exp(-torch.sum(torch.max(x[i]-x[i,index_sort[k]],torch.tensor(0)))-u + x[i,index_sort[k]])/((choice_size-k)*(choice_size -k +1)) for k in range(0,num)]))
+        return (-loss)/batch_size 
 
 
 #Define the MLE train model
@@ -117,9 +199,8 @@ class DeepCell(nn.Module):
 
         return (torch.sum(fm_first_order, 1) + torch.sum(fm_second_order, 1) + x_deep.reshape(-1) + self.bias).reshape(batch_size,choice_size)
 
-#DeepFM-a Model
 class DeepCell_With_Assortment(nn.Module):
-    def __init__(self, feature_sizes=FEATURE_SIZES1,
+    def __init__(self, feature_sizes =FEATURE_SIZES1,
                  embedding_size = EMBEDDING_SIZE, dropout = DROPOUT, h_depth = 2,
                  deeplayer_size = DEEPLAYER_SIZE,feature_column = [i for i in range(FEATURE_SIZES1.shape[0])]):
         super(DeepCell_With_Assortment, self).__init__()
@@ -180,14 +261,12 @@ class DeepCell_With_Assortment(nn.Module):
 
         return (torch.sum(fm_first_order, 1) + torch.sum(fm_second_order, 1) + x_deep.reshape(-1) + self.bias).reshape(batch_size,choice_size)
 
-
-#earlystopping class
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
     def __init__(self, save_path, patience=7, verbose=False, delta=0):
         """
         Args:
-            save_path : 模型保存文件夹
+            save_path : 
             patience (int): How long to wait after last time validation loss improved.
                             Default: 7
             verbose (bool): If True, prints a message for each validation loss improvement.
@@ -225,5 +304,5 @@ class EarlyStopping:
         '''Saves model when validation loss decrease.'''
         if self.verbose:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
-        torch.save(model, self.save_path)	# 这里会存储迄今最优模型的参数
+        torch.save(model, self.save_path)	
         self.val_loss_min = val_loss

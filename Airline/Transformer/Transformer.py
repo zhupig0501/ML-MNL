@@ -11,8 +11,8 @@ from torch.autograd import Variable
 
 
 def masked_softmax(x, valid_lens):
-    """softmax operations are performed by masking the element on the last axis"""
-    # x:3D张量，valid_lens:1D或2D张量
+    """Performing softmax operation by masking elements along the last axis"""
+    # x: 3D tensor, valid_lens: 1D or 2D tensor
     if valid_lens is None:
         return nn.functional.softmax(x, dim=-1)
     else:
@@ -21,61 +21,53 @@ def masked_softmax(x, valid_lens):
             valid_lens = torch.repeat_interleave(valid_lens, shape[1])
         else:
             valid_lens = valid_lens.reshape(-1)
-        # 最后一轴上被掩蔽的元素使用一个非常大的负值替换，从而其softmax输出为0
-        x = sequence_mask(x.reshape(-1, shape[-1]), valid_lens,
+        # The elements masked on the last axis are replaced with a very
+        # large negative value, making their softmax output to be 0
+        final_x = sequence_mask(x.reshape(-1, shape[-1]), valid_lens,
                               value=-1e6)
-        return nn.functional.softmax(x.reshape(shape), dim=-1)
+        return nn.functional.softmax(final_x.reshape(shape), dim=-1)
 
 
 def transpose_qkv(x, num_heads):
-    """Transform shape for parallel computation of multi-head attention"""
-    # 输入x的形状:(batch_size，查询或者“键－值”对的个数，num_hiddens)
-    # 输出x的形状:(batch_size，查询或者“键－值”对的个数，num_heads，
-    # num_hiddens/num_heads)
+    """Reshaping for Parallel Computation of Multiple Attention Heads"""
+    # Shape of input x: (batch_size, number of queries or key-value pairs, num_hiddens)
     x = x.reshape(x.shape[0], x.shape[1], num_heads, -1)
-#     print(x.shape)
-    # 输出x的形状:(batch_size，num_heads，查询或者“键－值”对的个数,
-    # num_hiddens/num_heads)
+    # Shape of output x: (batch_size, num_heads, number of queries or key-value pairs,num_hiddens/num_heads)
     x = x.permute(0, 2, 1, 3)
 
-    # 最终输出的形状:(batch_size*num_heads,查询或者“键－值”对的个数,
-    # num_hiddens/num_heads)
+    # Final output shape: (batch_size*num_heads, number of queries or key-value pairs, num_hiddens/num_heads)
     x = x.reshape(-1, x.shape[2], x.shape[3])
-#     print(x.shape)
     return x
 
 
 #@save
 def transpose_output(x, num_heads):
-    """Reverses the operation of the transpose_qkv function"""
+    """Reverse the operations of the transpose_qkv function"""
     x = x.reshape(-1, num_heads, x.shape[1], x.shape[2])
     x = x.permute(0, 2, 1, 3)
     return x.reshape(x.shape[0], x.shape[1], -1)
 
 
 class DotProductAttention(nn.Module):
-    """Scaling dot product attention"""
+     """Scaled Dot-Product Attention"""
     def __init__(self, dropout, **kwargs):
         super(DotProductAttention, self).__init__(**kwargs)
         self.dropout = nn.Dropout(dropout)
         self.attention_weights = 0
 
-    # queries的形状：(batch_size，查询的个数，d)
-    # keys的形状：(batch_size，“键－值”对的个数，d)
-    # values的形状：(batch_size，“键－值”对的个数，值的维度)
-    # valid_lens的形状:(batch_size，)或者(batch_size，查询的个数)
+    # Shape of queries: (batch_size, number of queries, d)
+    # Shape of keys: (batch_size, number of key-value pairs, d)
+    # Shape of values: (batch_size, number of key-value pairs, value dimension)
+    # Shape of valid_lens: (batch_size,) or (batch_size, number of queries)
     def forward(self, queries, keys, values, valid_lens=None):
         d = queries.shape[-1]
-        # 设置transpose_b=True为了交换keys的最后两个维度
         scores = torch.bmm(queries, keys.transpose(1, 2)) / math.sqrt(d)
         self.attention_weights = masked_softmax(scores, valid_lens)
-#         print(self.attention_weights[0][1])
-#         print(valid_lens[0])
         return torch.bmm(self.dropout(self.attention_weights), values)
 
 
 class PositionWiseFFN(nn.Module):
-    """PositionWiseFFN"""
+    """Position-based Feedforward Network"""
     def __init__(self, ffn_num_input, ffn_num_hiddens, ffn_num_outputs,
                  **kwargs):
         super(PositionWiseFFN, self).__init__(**kwargs)
@@ -88,7 +80,7 @@ class PositionWiseFFN(nn.Module):
 
 
 class AddNorm(nn.Module):
-    """Dropout + Layernorm"""
+    """Layer normalization after residual connection"""
     def __init__(self, normalized_shape, dropout, **kwargs):
         super(AddNorm, self).__init__(**kwargs)
         self.dropout = nn.Dropout(dropout)
@@ -99,7 +91,7 @@ class AddNorm(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    """multi-head attention"""
+    """Multi-Head Attention"""
     def __init__(self, key_size, query_size, value_size, num_hiddens,
                  num_heads, dropout, bias=False, **kwargs):
         super(MultiHeadAttention, self).__init__(**kwargs)
@@ -111,31 +103,33 @@ class MultiHeadAttention(nn.Module):
         self.W_o = nn.Linear(num_hiddens, num_hiddens, bias=bias)
 
     def forward(self, queries, keys, values, valid_lens):
-        # the shape of queries, keys, values:
-        # (batch_size, num of query or "key-value" pairs, num_hiddens)
-        # valid_lens shape:
-        # (batch_size,) or (batch_size, num of queries)
-        # The output size of queries, keys, and values is as follows:
-        # (batch_size*num_heads, num of query or key-value pairs,
+        # Shapes of queries, keys, and values:
+        # (batch_size, number of queries or key-value pairs, num_hiddens)
+        # Shape of valid_lens:
+        # (batch_size,) or (batch_size, number of queries)
+        # After transformation, shapes of output queries, keys, and values:
+        # (batch_size*num_heads, number of queries or key-value pairs,
         # num_hiddens/num_heads)
         queries = transpose_qkv(self.W_q(queries), self.num_heads)
         keys = transpose_qkv(self.W_k(keys), self.num_heads)
         values = transpose_qkv(self.W_v(values), self.num_heads)
 
         if valid_lens is not None:
+            # Along axis 0, replicate the first item (scalar or vector) num_heads times,
+            # then replicate the second item in the same way, and so on
             valid_lens = torch.repeat_interleave(
                 valid_lens, repeats=self.num_heads, dim=0)
 
-        # output shape :(batch_size*num_heads, num of queries, num_hiddens/num_heads)
+        # Shape of the output: (batch_size*num_heads, number of queries, num_hiddens/num_heads)
         output = self.attention(queries, keys, values, valid_lens)
 
-        # Shape of output_concat :(batch_size, num of queries, num_hiddens)
+        # Shape of output_concat: (batch_size, number of queries, num_hiddens)
         output_concat = transpose_output(output, self.num_heads)
         return self.W_o(output_concat)
 
 
 class EncoderBlock(nn.Module):
-    """single encoder of transformer"""
+    """transformer编码器块"""
     def __init__(self, key_size, query_size, value_size, num_hiddens,
                  norm_shape, ffn_num_input, ffn_num_hiddens, num_heads,
                  dropout, use_bias=False, **kwargs):
@@ -154,7 +148,7 @@ class EncoderBlock(nn.Module):
 
 
 class TransformerEncoder(d2l.Encoder):
-    """transformer whole encoder part"""
+    """transformer编码器"""
     def __init__(self, key_size, query_size, value_size,
                  num_hiddens, norm_shape, ffn_num_input, ffn_num_hiddens,
                  num_heads, num_layers, dropout, feature_sizes, k, embedding_sizes, norm_shape_init, use_bias=False, **kwargs):
@@ -196,48 +190,53 @@ class TransformerEncoder(d2l.Encoder):
         x_final = self.maskedsoftmax(x_final, valid_lens)
         x_final = x_final.permute(0, 2, 1)
         return x_final
-        # x:[batch_size, choice_size, feature_size]
 
 
 def sequence_mask(X, valid_len, value=0):
-    """Mask irrelevant entries in sequences"""
+    """Mask irrelevant entries in sequences.
+
+    Defined in :numref:`sec_seq2seq_decoder`"""
     maxlen = X.size(1)
     mask = torch.arange((maxlen), dtype=torch.float32,
                         device=X.device)[None, :] < valid_len[:, None]
-    X[~mask] = value
-    return X
+    masked_X = torch.where(mask, X, value)
+    return masked_X
 
 
 def validate_loss(pred, label, weight=None, pos_weight=None):
-    # 处理正负样本不均衡问题
+    # Addressing the Class Imbalance Problem
     if pos_weight is None:
         label_size = pred.size()[1]
         pos_weight = torch.ones(label_size)
-    # 处理多标签不平衡问题
+    # Handling Multi-Label Imbalance Issue
     if weight is None:
         label_size = pred.size()[1]
         weight = torch.ones(label_size)
-    unweighted_loss = pos_weight[0] * label * torch.log(pred[:, :, 0]) + (1 - label) * torch.log(1-pred[:, :, 0])
+    unweighted_loss = (label - pred[:, :, 0]) ** 2
     return unweighted_loss
 
 
 class MaskedSoftmaxCELoss(nn.Module):
-    """The softmax cross-entropy loss with masks."""
+    """The softmax cross-entropy loss with masks.
+
+    Defined in :numref:`sec_seq2seq_decoder`"""
     def __init__(self, weight=None, **kwargs):
         super(MaskedSoftmaxCELoss, self).__init__(**kwargs)
         self.weight = weight
         self.validate_loss = validate_loss
-        self.sig = nn.Sigmoid()
+        # self.maskedsoftmax = masked_softmax
     # `pred` shape: (`batch_size`, `num_steps`, `vocab_size`)
     # `label` shape: (`batch_size`, `num_steps`)
     # `valid_len` shape: (`batch_size`,)
 
     def forward(self, pred, label, valid_len):
-        pred = self.sig(pred)
         weights = torch.ones_like(label)
         weights = sequence_mask(weights, valid_len)
+        # self.reduction = 'none'
         unweighted_loss = self.validate_loss(pred, label, pos_weight=self.weight)
-        weighted_loss = -sum((unweighted_loss * weights).mean(dim=1))
+        # weighted_loss = torch.sqrt(sum((unweighted_loss * weights).sum(dim=1)))
+        weighted_loss = sum((unweighted_loss * weights).sum(dim=1))
+        # weighted_loss1 = torch.sum((unweighted_loss * weights))
         return weighted_loss
 
 class EarlyStopping:
@@ -245,7 +244,7 @@ class EarlyStopping:
     def __init__(self, save_path, patience=7, verbose=False, delta=0):
         """
         Args:
-            save_path : save_path
+            save_path : Model Saving Folder
             patience (int): How long to wait after last time validation loss improved.
                             Default: 7
             verbose (bool): If True, prints a message for each validation loss improvement.
@@ -284,5 +283,6 @@ class EarlyStopping:
         if self.verbose:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
         path = os.path.join(self.save_path, 'best_network.pth')
+        # Here, the parameters of the best model seen so far will be stored.
         torch.save(model.state_dict(), path)
         self.val_loss_min = val_loss

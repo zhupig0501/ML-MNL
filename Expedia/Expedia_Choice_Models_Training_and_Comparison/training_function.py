@@ -1,16 +1,14 @@
 import numpy as np
 import pandas as pd 
 from torch import nn
-from choicemodels import MNL_loss,MLE,DeepCell,DeepCell_With_Assortment,EarlyStopping
+from choicemodels import MNL_loss,MLE,Exp_loss,DeepCell,DeepCell_With_Assortment,EarlyStopping
 import torch.optim as optim
 from tqdm import tqdm
 import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
-from ChoiceModel import ChoiceModel
 
 
-#traing function for mnl
 def train_data(training_data,label,BATCH_SIZE = 32,NUM_EPOCHS = 100,LR = 0.01,patience = 10,path = 'Assortment\\DeepFM_parameters_ztn.pt',early_stop_num = 5,feature_column = [i for i in range(17)]):
     total = training_data.shape[1]
     early_stopping = EarlyStopping(save_path = path, patience=patience)
@@ -29,7 +27,7 @@ def train_data(training_data,label,BATCH_SIZE = 32,NUM_EPOCHS = 100,LR = 0.01,pa
             j = min(i + BATCH_SIZE, total)
             batches.append([tmp_data[0][i: j], tmp_data[1][i: j], tmp_data[2][i: j]])
             i = j
-        for step, batch in enumerate(tqdm(batches)):
+        for step, batch in enumerate(batches):
             model.train() 
             optimizer.zero_grad()
             #pdb.set_trace()
@@ -59,7 +57,6 @@ def train_data(training_data,label,BATCH_SIZE = 32,NUM_EPOCHS = 100,LR = 0.01,pa
     return model
 
 
-#traing function for DeepFM and DeepFM-a models
 def train_DeepFM(training_data,label,valid_data,valid_label,model_name = 'independent',BATCH_SIZE = 32,NUM_EPOCHS = 100,LR = 0.01,dropout = 0.5,h_depth = 2,deeplayer_size = 64,weight1 = 100,patience = 10,path = 'Assortment\\DeepFM_parameters_ztn.pt',early_stop_num = 5,feature_column = [i for i in range(17)]):
     total = training_data.shape[1]
     early_stopping = EarlyStopping(save_path = path, patience=patience)
@@ -82,7 +79,7 @@ def train_DeepFM(training_data,label,valid_data,valid_label,model_name = 'indepe
             j = min(i + BATCH_SIZE, total)
             batches.append([tmp_data[0][i: j], tmp_data[1][i: j], tmp_data[2][i: j]])
             i = j
-        for step, batch in enumerate(tqdm(batches)):
+        for step, batch in enumerate(batches):
             model.train() 
             optimizer.zero_grad()
             #pdb.set_trace()
