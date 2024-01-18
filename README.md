@@ -19,6 +19,12 @@ In the folder **Choice_Models_Training_and_Comparison**, there are mainly six py
 6. **experiment_process.ipynb** contains the whole process described in our paper from **generating data**, **training and testing choice models**, and finally **get assortment decision of those choice models**.
 7. **training_function.py** contains the process of training and testing choice models (DeepFM, DeepFM-a and MNL). And for MNL, we trained MNL with specific learning rate.
 8. **training_function_real_data.py** contains the process of training and testing choice models (DeepFM, DeepFM-a, MNL, MMNL and Exponomial Choice Model).
+### Dataset Description
+This repository contains synthetic data based on real airline data. The data is split into two CSV files:
+1. **training_data.csv**: This file is intended for training purposes and contains transaction data for 20,000 assortments. Each assortment includes a varying number of products, ranging from 5 to 30 items per assortment.
+2. **test_data.csv**: This file is designed for testing and includes transaction data for 10,000 assortments. Similar to the training data, each assortment in this file contains between 5 to 30 products.
+
+Both datasets have been carefully synthesized to reflect realistic transaction patterns based on genuine airline data. They are ideal for modeling and analysis tasks related to airline operations and customer behavior.
 
 ## Expedia
 ### Expedia_preprocess
