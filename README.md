@@ -7,7 +7,7 @@ ICDM 2013 Kaggle](https://www.kaggle.com/competitions/expedia-personalized-sort/
 ### # Airline Synthetic Dataset Description
 This repository hosts a synthetic dataset modeled on airline transactions. The data is not real but has been generated based on Algorithm 2 described in [our research paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4298996). The dataset includes two main files:
 1. **transaction_data.csv**: Contains synthetic labeled transaction data for 30,000 assortments, with each assortment comprising between 5 to 30 products.
-2. **pool_product.csv**: Represents a synthetic product pool, featuring data for 1,000 assortments. Each assortment offers a choice of 100 different products.
+2. **pool_product.csv**: Provides 1000 synthetic product pools. Each pool contains 100 different products that can be used as candidates for an assortment.
 
 This synthetic dataset is designed for analytical and modeling purposes in the context of airline transactions and customer behavior studies.
 
@@ -32,7 +32,7 @@ In the folder **Choice_Models_Training_and_Comparison**, there are mainly six py
 ### Expedia Synthetic Hotel Dataset Description
 This repository contains a synthetic dataset based on hotel transactions from Expedia. The data is not real but has been generated based on Algorithm 2 described in [our research paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4298996). The dataset is divided into two main files:
 1. **transaction_data.csv**: This file includes synthetic labeled transaction data for 30,000 hotel room assortments. Each assortment comprises between 5 to 30 different products.
-2. **pool_product.csv**: This file provides a synthetic room pool with data for 1,000 assortments, each offering a selection of 100 different products.
+2. **pool_product.csv**: This file provides 1,000 synthetic room pools. Each pool offers a selection of 100 different products.
 
 Tailored for the hospitality industry, this synthetic dataset is ideal for analyses and modeling, focusing on hotel transactions and customer choice behavior.
 ### Expedia_Transformer
