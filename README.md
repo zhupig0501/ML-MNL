@@ -1,5 +1,5 @@
-# ML_MNL
-In our paper, we used two different dataset to perform a validation on our framework. One dataset is actual air ticket reservation data collected by Amadeus \([Mottini & Acuna-Agost 2017](https://dl.acm.org/doi/abs/10.1145/3097983.3098005)\). The other dataset is a published real hotel dataset provided
+# Transformer-Choice-Model
+In [our research paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4298996), we used two different dataset to perform a validation on our framework. One dataset is actual air ticket reservation data collected by Amadeus \([Mottini & Acuna-Agost 2017](https://dl.acm.org/doi/abs/10.1145/3097983.3098005)\). The other dataset is a published real hotel dataset provided
 by Expedia which are used in [Personalize Expedia Hotel Searches -
 ICDM 2013 Kaggle](https://www.kaggle.com/competitions/expedia-personalized-sort/overview). 
 
