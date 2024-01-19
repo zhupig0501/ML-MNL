@@ -4,12 +4,12 @@ by Expedia which are used in [Personalize Expedia Hotel Searches -
 ICDM 2013 Kaggle](https://www.kaggle.com/competitions/expedia-personalized-sort/overview). 
 
 ## Airline
-### # Airline Dataset Description
-This repository hosts a dataset related to airline transactions. The dataset is divided into two main files:
-1. **transaction_data.csv**: This file includes labeled transaction data for 30,000 assortments. Each assortment in this file comprises between 5 to 30 products.
-2. **pool_product.csv**: This file represents a product pool. It contains data for 1,000 assortments, with each assortment offering a selection of 100 different products.
+### # Airline Synthetic Dataset Description
+This repository hosts a synthetic dataset modeled on airline transactions. The data is not real but has been generated based on Algorithm 2 described in [our research paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4298996). The dataset includes two main files:
+1. **transaction_data.csv**: Contains synthetic labeled transaction data for 30,000 assortments, with each assortment comprising between 5 to 30 products.
+2. **pool_product.csv**: Represents a synthetic product pool, featuring data for 1,000 assortments. Each assortment offers a choice of 100 different products.
 
-This data is specifically structured for analysis and modeling in the context of airline transactions and customer choice behavior.
+This synthetic dataset is designed for analytical and modeling purposes in the context of airline transactions and customer behavior studies.
 
 ### Transformer
 In the folder **Transformer**, there are mainly two python documents and one folder. They are used to train transformer and contain the final trained model named simulator.pth.
@@ -29,12 +29,12 @@ In the folder **Choice_Models_Training_and_Comparison**, there are mainly six py
 
 
 ## Expedia
-### Expedia Hotel Dataset Description
-This repository contains a dataset related to hotel transactions from Expedia. The dataset is organized into two main files:
-1. **transaction_data.csv**: This file includes labeled transaction data for 30,000 hotel room assortments. Each assortment in this file comprises between 5 to 30 different room types or offerings.
-2. **pool_product.csv**: This file represents a room pool. It contains data for 1,000 assortments, with each assortment offering a selection of 100 different room types or hotel services.
+### Expedia Synthetic Hotel Dataset Description
+This repository contains a synthetic dataset based on hotel transactions from Expedia. The data is not real but has been generated based on Algorithm 2 described in [our research paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4298996). The dataset is divided into two main files:
+1. **transaction_data.csv**: This file includes synthetic labeled transaction data for 30,000 hotel room assortments. Each assortment comprises between 5 to 30 different products.
+2. **pool_product.csv**: This file provides a synthetic room pool with data for 1,000 assortments, each offering a selection of 100 different products.
 
-This dataset is tailored for analyses and modeling in the hospitality industry, specifically focusing on hotel transactions and customer choice behavior.
+Tailored for the hospitality industry, this synthetic dataset is ideal for analyses and modeling, focusing on hotel transactions and customer choice behavior.
 ### Expedia_Transformer
 In the folder **Expedia_Transformer**, there are mainly eight python documents and two folder. They are used to show the whole structure of our transformer and contain the final trained model.
 1. **ChoiceTfData.py** includes the structure of data which are used in our Transformer, generated from the csv.
