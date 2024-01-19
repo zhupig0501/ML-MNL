@@ -9,7 +9,7 @@ This repository hosts a synthetic dataset modeled on airline transactions. You c
 1. **transaction_data.csv**: Contains synthetic labeled transaction data for 30,000 assortments, with each assortment comprising between 5 to 30 products.
 2. **pool_product.csv**: Provides 1000 synthetic product pools. Each pool contains 100 different products that can be used as candidates for an assortment.
 
-This synthetic dataset is designed for analytical and modeling purposes in the context of airline transactions and customer behavior studies.
+This synthetic dataset is designed for analytical and modeling purposes in the context of airline transactions and customer behavior studies. You can use the transaction_data.csv to train your own model and make decisions in the pool_product.csv. Then, you can use our proposed model as simulator to get the feedback.
 
 ### Transformer
 In the folder **Transformer**, there are mainly two python documents and one folder. They are used to train transformer and contain the final trained model named simulator.pth.
@@ -34,7 +34,7 @@ This repository contains a synthetic dataset based on hotel transactions from Ex
 1. **transaction_data.csv**: This file includes synthetic labeled transaction data for 30,000 hotel room assortments. Each assortment comprises between 5 to 30 different products.
 2. **pool_product.csv**: This file provides 1,000 synthetic room pools. Each pool offers a selection of 100 different products.
 
-Tailored for the hospitality industry, this synthetic dataset is ideal for analyses and modeling, focusing on hotel transactions and customer choice behavior.
+Tailored for the hospitality industry, this synthetic dataset is ideal for analyses and modeling, focusing on hotel transactions and customer choice behavior. You can use the transaction_data.csv to train your own model and make decisions in the pool_product.csv. Then, you can use our proposed model as simulator to get the feedback.
 ### Expedia_Transformer
 In the folder **Expedia_Transformer**, there are mainly eight python documents and two folder. They are used to show the whole structure of our transformer and contain the final trained model.
 1. **ChoiceTfData.py** includes the structure of data which are used in our Transformer, generated from the csv.
