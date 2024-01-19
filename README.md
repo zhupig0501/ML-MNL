@@ -4,8 +4,8 @@ by Expedia which are used in [Personalize Expedia Hotel Searches -
 ICDM 2013 Kaggle](https://www.kaggle.com/competitions/expedia-personalized-sort/overview). 
 
 ## Airline
-### # Airline Synthetic Dataset Description
-This repository hosts a synthetic dataset modeled on airline transactions. The data is not real but has been generated based on Algorithm 2 described in [our research paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4298996). The dataset includes two main files:
+### Airline Synthetic Dataset Description
+This repository hosts a synthetic dataset modeled on airline transactions. You can access the dataset [here](https://github.com/zhupig0501/Transformer-Choice-Model/tree/main/Airline). The data is not real but has been generated based on Algorithm 2 described in [our research paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4298996). The dataset includes two main files:
 1. **transaction_data.csv**: Contains synthetic labeled transaction data for 30,000 assortments, with each assortment comprising between 5 to 30 products.
 2. **pool_product.csv**: Provides 1000 synthetic product pools. Each pool contains 100 different products that can be used as candidates for an assortment.
 
@@ -30,7 +30,7 @@ In the folder **Choice_Models_Training_and_Comparison**, there are mainly six py
 
 ## Expedia
 ### Expedia Synthetic Hotel Dataset Description
-This repository contains a synthetic dataset based on hotel transactions from Expedia. The data is not real but has been generated based on Algorithm 2 described in [our research paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4298996). The dataset is divided into two main files:
+This repository contains a synthetic dataset based on hotel transactions from Expedia.  You can access the dataset [here](https://github.com/zhupig0501/Transformer-Choice-Model/tree/main/Expedia). The data is not real but has been generated based on Algorithm 2 described in [our research paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4298996). The dataset is divided into two main files:
 1. **transaction_data.csv**: This file includes synthetic labeled transaction data for 30,000 hotel room assortments. Each assortment comprises between 5 to 30 different products.
 2. **pool_product.csv**: This file provides 1,000 synthetic room pools. Each pool offers a selection of 100 different products.
 
