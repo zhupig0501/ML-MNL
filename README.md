@@ -4,6 +4,13 @@ by Expedia which are used in [Personalize Expedia Hotel Searches -
 ICDM 2013 Kaggle](https://www.kaggle.com/competitions/expedia-personalized-sort/overview). 
 
 ## Airline
+### # Airline Dataset Description
+This repository hosts a dataset related to airline transactions. The dataset is divided into two main files:
+1. **transaction_data.csv**: This file includes labeled transaction data for 30,000 assortments. Each assortment in this file comprises between 5 to 30 products.
+2. **pool_product.csv**: This file represents a product pool. It contains data for 1,000 assortments, with each assortment offering a selection of 100 different products.
+
+This data is specifically structured for analysis and modeling in the context of airline transactions and customer choice behavior.
+
 ### Transformer
 In the folder **Transformer**, there are mainly two python documents and one folder. They are used to train transformer and contain the final trained model named simulator.pth.
 1. **transformer.py** includes the whole class of modified transformer of our paper.
@@ -19,17 +26,15 @@ In the folder **Choice_Models_Training_and_Comparison**, there are mainly six py
 6. **experiment_process.ipynb** contains the whole process described in our paper from **generating data**, **training and testing choice models**, and finally **get assortment decision of those choice models**.
 7. **training_function.py** contains the process of training and testing choice models (DeepFM, DeepFM-a and MNL). And for MNL, we trained MNL with specific learning rate.
 8. **training_function_real_data.py** contains the process of training and testing choice models (DeepFM, DeepFM-a, MNL, MMNL and Exponomial Choice Model).
-### Dataset Description
-This repository contains synthetic data based on real airline data. The data is split into two CSV files:
-1. **training_data.csv**: This file is intended for training purposes and contains transaction data for 20,000 assortments. Each assortment includes a varying number of products, ranging from 5 to 30 products per assortment.
-2. **test_data.csv**: This file is designed for testing and includes transaction data for 10,000 assortments. Similar to the training data, each assortment in this file contains between 5 to 30 products.
 
-Both datasets have been carefully synthesized to reflect realistic transaction patterns based on genuine airline data. They are ideal for modeling and analysis tasks related to airline operations and customer behavior.
 
 ## Expedia
-### Expedia_preprocess
-In the folder **Expedia_preprocess**, we perform a preprocess function on original data downloaded in Kaggle, and finally get the document **df_OR_normal_process_with_nonpurchase_clean.csv** as our dataset. 
+### Expedia Hotel Dataset Description
+This repository contains a dataset related to hotel transactions from Expedia. The dataset is organized into two main files:
+1. **transaction_data.csv**: This file includes labeled transaction data for 30,000 hotel room assortments. Each assortment in this file comprises between 5 to 30 different room types or offerings.
+2. **pool_product.csv**: This file represents a room pool. It contains data for 1,000 assortments, with each assortment offering a selection of 100 different room types or hotel services.
 
+This dataset is tailored for analyses and modeling in the hospitality industry, specifically focusing on hotel transactions and customer choice behavior.
 ### Expedia_Transformer
 In the folder **Expedia_Transformer**, there are mainly eight python documents and two folder. They are used to show the whole structure of our transformer and contain the final trained model.
 1. **ChoiceTfData.py** includes the structure of data which are used in our Transformer, generated from the csv.
